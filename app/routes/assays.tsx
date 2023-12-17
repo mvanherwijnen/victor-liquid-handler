@@ -1,22 +1,22 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
-import type { Note } from "~/models/note.server";
-import { getNoteListItems } from "~/models/note.server";
+import type { Assay } from "~/models/assay.server";
+import { listAssays } from "~/models/assay.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 
 type LoaderData = {
-  noteListItems: Note[];
+  assayItems: Assay[];
 };
 
 export async function loader ({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
-  const noteListItems = await getNoteListItems({ userId });
-  return json({ noteListItems });
-};
+  const assayItems = await listAssays({ userId });
+  return json({ assayItems });
+}
 
-export default function NotesPage() {
+export default function AssaysPage() {
   const data = useLoaderData<typeof loader>() as LoaderData;
 
   return (
@@ -25,24 +25,24 @@ export default function NotesPage() {
       <main className="flex h-full bg-white">
         <div className="h-full w-80 border-r bg-gray-50">
           <Link to="new" className="block p-4 text-xl text-blue-500">
-            + New Note
+            + New Assay
           </Link>
 
           <hr />
 
-          {data.noteListItems.length === 0 ? (
-            <p className="p-4">No notes yet</p>
+          {data.assayItems.length === 0 ? (
+            <p className="p-4">No assays yet</p>
           ) : (
             <ol>
-              {data.noteListItems.map((note) => (
-                <li key={note.id}>
+              {data.assayItems.map((assay) => (
+                <li key={assay.id}>
                   <NavLink
                     className={({ isActive }) =>
                       `block border-b p-4 text-xl ${isActive ? "bg-white" : ""}`
                     }
-                    to={note.id}
+                    to={`/assays/${assay.id}`}
                   >
-                    📝 {note.title}
+                    🧪 {assay.name}
                   </NavLink>
                 </li>
               ))}
@@ -61,11 +61,11 @@ export default function NotesPage() {
 function Header() {
   const user = useUser();
   return (
-    <header className="flex items-center justify-between bg-slate-800 p-4 text-white">
-      <h1 className="text-3xl font-bold">
-        <Link to=".">Notes</Link>
+    <header className="flex justify-end items-center bg-slate-800 p-4 text-white">
+      <h1 className="text-3xl font-bold mr-auto">
+        <Link to=".">🤖 Victor <span className="hidden md:inline-block"> x Elisa</span></Link>
       </h1>
-      <p>{user.email}</p>
+      <p className="mr-6 hidden md:inline-block">{user.email}</p>
       <Form action="/logout" method="post">
         <button
           type="submit"
